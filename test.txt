@@ -11,3 +11,12 @@ python -m streamlit run streamlit_app.py
 
 # SPRAWDZENIE AKTUALNEGO REPO - dla pewności
 git remote -v
+
+RZECZY DO ZROBIENIA:
+1. skrócenie kodu, fragmentów w funkcję:
+    - Wyniki
+    - Pobieranie pliku excel
+    - Przyciski punktów
+    - Tworzenie nowego st.session_state
+    - DOdawnie wyników rundy do pamięci
+    - Przyciski końcowe
