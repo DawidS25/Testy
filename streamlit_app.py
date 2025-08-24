@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import pandas as pd
+import csv
 import os
 import io
 import base64
@@ -336,7 +337,7 @@ def round_info(q, current_round, current_question_number):
     emoji = CATEGORY_EMOJIS.get(q['category'], '')
     st.markdown(f"#### 🧠 Pytanie {current_question_number} – kategoria: *{q['category']}* {emoji}")
     st.write(q["text"])
-    col1, col2 = st.columns([1, 3])
+    col1, col2, col3 = st.columns([1, 2, 5])
     with col1:
         st.markdown(f"<small>id: {q['id']}</small>", unsafe_allow_html=True)
     with col2:
@@ -346,6 +347,33 @@ def round_info(q, current_round, current_question_number):
                 if new_q:
                     st.session_state.current_question = new_q
                 st.rerun()
+    with col3:
+        if "virtual_board_step" not in st.session_state or st.session_state.virtual_board_step not in ["guess", "score"]:
+            if st.button("⚠️"):
+                file_path = "reported_questions.csv"
+                repo = "DawidS25/Spectrum"
+                commit_message = "🚨 Zgłoszono pytanie"
+                file_exists = os.path.isfile(file_path)
+                with open(file_path, "a", newline="", encoding="utf-8") as f:
+                    writer = csv.DictWriter(f, fieldnames=q.keys(), delimiter=";")
+                    if not file_exists:
+                        writer.writeheader()
+                    writer.writerow(q)
+                try:
+                    token = st.secrets["GITHUB_TOKEN"]
+                except Exception:
+                    token = None
+                                
+                if token:
+                    response = upload_to_github(file_path, repo, file_path, token, commit_message)
+                    if response.status_code == 201:
+                        st.success(f"🚨 Pytanie zostało zgłoszone")
+                        st.session_state.results_uploaded = True
+                    else:
+                        st.error(f"❌ Błąd zapisu: {response.status_code} – {response.json()}")
+                else:
+                    st.warning("⚠️ Nie udało się zgłosić pytania.")
+            
     if not st.session_state.virtual_board:
         st.markdown(f"⬅️ {q['left']} | {q['right']} ➡️")
 
